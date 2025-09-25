@@ -92,8 +92,7 @@ python main.py
 ```
 
 🧩 Cấu trúc dự án (gợi ý)
-bash
-Sao chép mã
+```bash
 BOT_CHESS_BTL/
 │── README.md              # Tài liệu mô tả dự án
 │── requirements.txt       # Danh sách thư viện cần thiết
@@ -103,6 +102,7 @@ BOT_CHESS_BTL/
 │── bot.py                 # Logic "chess bot"
 │── utils.py               # Hàm tiện ích (random move, evaluation, ...)
 └── tests/                 # Unit tests
+```
 🎯 Mục tiêu
 Biểu diễn bàn cờ vua 8×8 bằng Python.
 
