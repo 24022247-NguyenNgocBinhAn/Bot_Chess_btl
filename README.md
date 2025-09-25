@@ -64,34 +64,33 @@ Bàn cờ được khởi tạo theo quy tắc chuẩn quốc tế:
 Cài đặt các thư viện bằng `pip`:
 ```bash
 pip install numpy sympy scipy
+```
 🚀 Chạy chương trình
 Tạo môi trường ảo:
-
-bash
-Sao chép mã
+```bash
 python -m venv venv
+```
+
+
 Kích hoạt môi trường:
-
 Windows:
-
-bash
-Sao chép mã
+```bash
 venv\Scripts\activate
+```
 Linux/macOS:
-
-bash
-Sao chép mã
+```bash
 source venv/bin/activate
+```
+
 Cài đặt thư viện cần thiết:
-
-bash
-Sao chép mã
+```bash
 pip install -r requirements.txt
+```
 Chạy chương trình chính:
-
-bash
-Sao chép mã
+```bash
 python main.py
+```
+
 🧩 Cấu trúc dự án (gợi ý)
 bash
 Sao chép mã
