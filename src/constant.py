@@ -184,3 +184,61 @@ PST = {
     chess.KING: (KING_PST_MG, KING_PST_EG)
 }
 
+FILE_MASKS = [
+    chess.BB_FILE_A, chess.BB_FILE_B, chess.BB_FILE_C, chess.BB_FILE_D,
+    chess.BB_FILE_E, chess.BB_FILE_F, chess.BB_FILE_G, chess.BB_FILE_H
+]
+
+ADJACENT_FILES_MASKS = [
+    chess.BB_FILE_B,
+    chess.BB_FILE_A | chess.BB_FILE_C,
+    chess.BB_FILE_B | chess.BB_FILE_D,
+    chess.BB_FILE_C | chess.BB_FILE_E,
+    chess.BB_FILE_D | chess.BB_FILE_F,
+    chess.BB_FILE_E | chess.BB_FILE_G,
+    chess.BB_FILE_F | chess.BB_FILE_H,
+    chess.BB_FILE_G
+]
+
+PROTECTED_PASSED_PAWN_BONUS_MG = [0, 20, 35, 55, 90, 130, 180, 0]
+PROTECTED_PASSED_PAWN_BONUS_EG = [0, 30, 50, 80, 120, 180, 250, 0]
+UNPROTECTED_PASSED_PAWN_BONUS_MG = [0, 5, 10, 15, 25, 40, 60, 0]
+UNPROTECTED_PASSED_PAWN_BONUS_EG = [0, 10, 20, 30, 50, 75, 100, 0]
+
+ISOLATED_PAWNS_SEMI_OPEN = -25
+ISOLATED_PAWNS_PENALTY = -10
+
+DOUBLE_PAWNS_PENALTY_MG = -6
+DOUBLE_PAWNS_PENALTY_EG = -35
+
+BACKWARD_PAWN_PENALTY_MG = -8
+BACKWARD_PAWN_PENALTY_EG = -20
+
+# build passed pawn mask
+WHITE_PASSED_PAWN_MASKS = [chess.SquareSet() for _ in range(64)]
+BLACK_PASSED_PAWN_MASKS = [chess.SquareSet() for _ in range(64)]
+
+for square in chess.SQUARES:
+    file_index = chess.square_file(square)
+    rank_index = chess.square_rank(square)
+
+    files_mask = chess.SquareSet(FILE_MASKS[file_index])
+    if file_index > 0:
+        files_mask |= FILE_MASKS[file_index - 1]
+    if file_index < 7:
+        files_mask |= FILE_MASKS[file_index + 1]
+
+    ranks_in_front = chess.SquareSet()
+    for r in range(rank_index + 1, 8):
+        ranks_in_front |= chess.BB_RANKS[r]
+    WHITE_PASSED_PAWN_MASKS[square] = files_mask & ranks_in_front
+
+    ranks_in_front = chess.SquareSet()
+    for r in range(rank_index - 1, -1, -1):
+        ranks_in_front |= chess.BB_RANKS[r]
+    BLACK_PASSED_PAWN_MASKS[square] = files_mask & ranks_in_front
+
+ROOK_OPEN_FILES_BONUS = 16
+ROOK_SEMI_OPEN_FILES_BONUS = 8
+
+DOUBLE_BISHOP_BONUS = 50
