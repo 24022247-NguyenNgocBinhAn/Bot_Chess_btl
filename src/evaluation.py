@@ -22,7 +22,7 @@ def is_file_semi_open(board: chess.Board, file_i: int, turn: chess.Color) -> boo
     return condition_1 and condition_2
 
 ## PAWN VALUE SUB FUNCTION
-def doubled_pawns_penalty(board: chess.Board, color: chess.Color, current_phase_score: int) -> float:
+def get_doubled_pawns_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_pawns = board.pieces(chess.PAWN, color)
     doubled_pawn_count = 0
 
@@ -35,18 +35,19 @@ def doubled_pawns_penalty(board: chess.Board, color: chess.Color, current_phase_
             doubled_pawn_count += (count - 1)
 
     if doubled_pawn_count == 0:
-        return 0
+        return (0,0)
 
     mg_penalty = doubled_pawn_count * DOUBLE_PAWNS_PENALTY_MG
     eg_penalty = doubled_pawn_count * DOUBLE_PAWNS_PENALTY_EG
 
     if mg_penalty == 0:
-        return 0
+        return (0,0)
 
-    return phase_score_calculator(current_phase_score, mg_penalty, eg_penalty)
+    return (mg_penalty,eg_penalty)
 
-def isolated_pawns_penalty(board: chess.Board, color: chess.Color) -> float:
-    total_penalty = 0
+def get_isolated_pawns_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    mg_penalty = 0
+    eg_penalty = 0
     my_pawns = board.pieces(chess.PAWN, color)
 
     for pawn_square in my_pawns:
@@ -55,14 +56,16 @@ def isolated_pawns_penalty(board: chess.Board, color: chess.Color) -> float:
         file_open = is_file_semi_open(board, file_i, not color)
 
         if not (my_pawns & adjacent_mask) and file_open:
-            total_penalty += ISOLATED_PAWNS_SEMI_OPEN
+            mg_penalty += ISOLATED_PAWNS_SEMI_OPEN_MG
+            eg_penalty += ISOLATED_PAWNS_SEMI_OPEN_EG
         elif not (my_pawns & adjacent_mask) and not file_open:
-            total_penalty += ISOLATED_PAWNS_PENALTY
+            mg_penalty += ISOLATED_PAWNS_PENALTY_MG
+            eg_penalty += ISOLATED_PAWNS_PENALTY_EG
 
-    return total_penalty
+    return (mg_penalty, eg_penalty)
 
 
-def get_passed_pawn_bonus(board: chess.Board, color: chess.Color, current_phase_score: int) -> float:
+def get_passed_pawn_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_pawns = board.pieces(chess.PAWN, color)
     opponent_pawns = board.pieces(chess.PAWN, not color)
 
@@ -91,9 +94,9 @@ def get_passed_pawn_bonus(board: chess.Board, color: chess.Color, current_phase_
                 mg_value += UNPROTECTED_PASSED_PAWN_BONUS_MG[bonus_rank_index]
                 eg_value += UNPROTECTED_PASSED_PAWN_BONUS_EG[bonus_rank_index]
 
-    return phase_score_calculator(current_phase_score, mg_value, eg_value)
+    return (mg_value, eg_value)
 
-def get_backward_pawn_penalty(board: chess.Board, color: chess.Color, current_phase_score: int) -> float:
+def get_backward_pawn_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_pawns = board.pieces(chess.PAWN, color)
     mg_penalty = 0
     eg_penalty = 0
@@ -105,7 +108,7 @@ def get_backward_pawn_penalty(board: chess.Board, color: chess.Color, current_ph
         if pawn_file > 0:
             support_left_square = pawn_square
             if color == chess.WHITE:
-                support_left_square = pawn_square - 9 
+                support_left_square = pawn_square - 9
             else:
                 support_left_square = pawn_square + 7
             piece_on_left = board.piece_at(support_left_square)
@@ -136,42 +139,120 @@ def get_backward_pawn_penalty(board: chess.Board, color: chess.Color, current_ph
                 eg_penalty += BACKWARD_PAWN_PENALTY_EG
 
     if mg_penalty == 0:
-        return 0.0
+        return (0,0)
 
-    return phase_score_calculator(current_phase_score, mg_penalty, eg_penalty)
+    return (mg_penalty, eg_penalty)
 
-def get_pawn_value(board: chess.Board, color: chess.Color, current_phase_score: int) -> float:
-    doubled_pawn_penalty = doubled_pawns_penalty(board, color, current_phase_score)
-    isolated_pawn_penalty = isolated_pawns_penalty(board, color)
-    passed_pawn_bonus = get_passed_pawn_bonus(board, color, current_phase_score)
-    backward_pawn_penalty = get_backward_pawn_penalty(board, color, current_phase_score)
-    return doubled_pawn_penalty + isolated_pawn_penalty + passed_pawn_bonus + backward_pawn_penalty
+def get_pawn_value(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    doubled_pawn_mg, doubled_pawn_eg = get_doubled_pawns_penalty(board, color)
+    isolated_pawn_mg, isolated_pawn_eg = get_isolated_pawns_penalty(board, color)
+    passed_pawn_mg, passed_pawn_eg = get_passed_pawn_bonus(board, color)
+    backward_pawn_mg, backward_pawn_eg = get_backward_pawn_penalty(board, color)
+    return (doubled_pawn_mg + isolated_pawn_mg + passed_pawn_mg + backward_pawn_mg, doubled_pawn_eg + isolated_pawn_eg + passed_pawn_eg + backward_pawn_eg)
+
 ## PAWN VALUE SUB FUNCTION END
 
 # ROOK ON SEMI AND OPEN FILES
-def get_rook_bonus(board: chess.Board, color: chess.Color) -> int:
+def get_rook_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_rooks = board.pieces(chess.ROOK, color)
-    total_bonus = 0
+    mg_bonus = 0
+    eg_bonus = 0
     for rook_square in my_rooks:
         if is_file_semi_open(board, chess.square_file(rook_square), color):
-            total_bonus += ROOK_SEMI_OPEN_FILES_BONUS
-            break
+            mg_bonus += ROOK_SEMI_OPEN_FILES_BONUS_MG
+            eg_bonus += ROOK_SEMI_OPEN_FILES_BONUS_EG
+            continue
         if is_file_open(board, chess.square_file(rook_square)):
-            total_bonus += ROOK_OPEN_FILES_BONUS
-            break
+            mg_bonus += ROOK_OPEN_FILES_BONUS_MG
+            eg_bonus += ROOK_OPEN_FILES_BONUS_EG
 
-    return total_bonus
+    return (mg_bonus, eg_bonus)
 
 # DOUBLE BISHOP
-def get_double_bishop_bonus(board: chess.Board, color: chess.Color) -> int:
+def get_double_bishop_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_bishop = board.pieces((chess.BISHOP, color))
     if len(my_bishop) == 2:
-        return DOUBLE_BISHOP_BONUS
-    return 0
+        return (DOUBLE_BISHOP_BONUS_MG, DOUBLE_BISHOP_BONUS_EG)
+    return (0, 0)
+
+def sub_piece_value(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    rook_bonus_mg, rook_bonus_eg = get_rook_bonus(board, color)
+    double_bishop_bonus_mg, double_bishop_bonus_eg = get_double_bishop_bonus(board, color)
+    return (rook_bonus_mg + double_bishop_bonus_mg, rook_bonus_eg + double_bishop_bonus_eg)
 
 ## KING SAFETY SUB FUNCTIONS
+def pawn_shield_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    mg_penalty = 0
+    eg_penalty = 0
+    king_square = board.king(color)
+    king_file = chess.square_file(king_square)
+    king_rank = chess.square_rank(king_square)
+
+    if king_file < 3 or king_file > 4:
+        shield_files = []
+        if king_file <= 2:
+            shield_files = [0, 1, 2]
+        else:
+            shield_files = [5, 6, 7]
+
+        pawn_rank = -1
+        if color == chess.WHITE:
+            pawn_rank = 1
+        else:
+            pawn_rank = 6
+        my_pawns = board.pieces(chess.PAWN, color)
+
+        for file in shield_files:
+            shield_square = chess.square(file, pawn_rank)
+            piece = board.piece_at(shield_square)
+
+            if piece and piece.piece_type == chess.PAWN and piece.color == color:
+                if chess.square_rank(shield_square) != pawn_rank:
+                    mg_penalty += ADVANCED_PAWN_SHIELD_PENALTY_MG
+                    eg_penalty += ADVANCED_PAWN_SHIELD_PENALTY_EG
+            else:
+                mg_penalty += MISSING_PAWN_SHIELD_PENALTY_MG
+                eg_penalty += MISSING_PAWN_SHIELD_PENALTY_EG
+
+    return (mg_penalty, eg_penalty)
 
 
+def king_attack_zone_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    king_square = board.king(color)
+    opponent_color = not color
+
+    attack_zone = chess.SquareSet(chess.BB_KING_ATTACKS[king_square])
+    attack_zone.add(king_square)
+
+    value_of_attacks = 0
+    attacker_count = 0
+
+    for piece_type in [chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]:
+        opponent_pieces = board.pieces(piece_type, opponent_color)
+        for piece_square in opponent_pieces:
+            attacks = board.attacks(piece_square)
+
+            attacks_in_zone = attacks & attack_zone
+
+            if attacks_in_zone:
+                attacker_count += 1
+                value_of_attacks += len(attacks_in_zone) * KING_ATTACK_ZONE_WEIGHTS[piece_type]
+
+    if attacker_count == 0:
+        return 0
+
+    multiplier_index = min(attacker_count, len(ATTACK_WEIGHT_MULTIPLIER) - 1)
+    attack_multiplier = ATTACK_WEIGHT_MULTIPLIER[multiplier_index]
+    final_penalty = (value_of_attacks * attack_multiplier)/100
+
+    return (int(final_penalty), 0)
+
+def get_king_safety_penalty(board: chess.Board, color: chess.Color) -> tuple[int, int]:
+    king_shield_mg, king_shield_eg = pawn_shield_penalty(board, color)
+    king_attack_zone_penalty_mg = king_attack_zone_penalty(board, color)[0]
+    return (king_shield_mg + king_attack_zone_penalty_mg, king_shield_eg)
+
+## KING SAFETY SUB FUNCTIONS END
 def count_pieces_both_sides(board: chess.Board) -> dict:
     total_counts = {}
 
@@ -190,6 +271,13 @@ def evaluate_board(board: chess.Board) -> float:
 
     mg_total_score = 0
     eg_total_score = 0
+
+    for color in [chess.WHITE, chess.BLACK]:
+        pawn_mg, pawn_eg = get_pawn_value(board, color)
+        sub_piece_mg, sub_piece_eg = sub_piece_value(board, color)
+        king_safety_mg, king_safety_eg = get_king_safety_penalty(board, color)
+        mg_total_score += pawn_mg + sub_piece_mg + king_safety_mg
+        eg_total_score += pawn_eg + sub_piece_eg + king_safety_eg
 
     for square in chess.SQUARES:
         piece = board.piece_at(square)
@@ -216,7 +304,6 @@ def evaluate_board(board: chess.Board) -> float:
             eg_total_score += (piece_score + eg_pst_score) * score_multiply
 
     final_score = phase_score_calculator(current_phase_score, mg_total_score, eg_total_score)
-
     if board.turn == chess.WHITE:
         return final_score
     else:
