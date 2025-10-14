@@ -5,27 +5,13 @@ from search import find_best_move
 
 
 def _get_player_move(board: chess.Board) -> chess.Move:
-    """
-    Prompts the player for a move and validates it.
-
-    Accepts moves in Standard Algebraic Notation (SAN) or Universal Chess Interface (UCI) format.
-    Keeps prompting until a valid and legal move is entered.
-
-    Args:
-        board: The current chess board state.
-
-    Returns:
-        A legal chess.Move object.
-    """
     while True:
         player_input = input("Enter your move (e.g., 'e4' or 'e2e4'): ")
         try:
-            # First, try to parse as SAN, which is more user-friendly.
             move = board.parse_san(player_input)
             return move
         except ValueError:
             try:
-                # If SAN parsing fails, try UCI.
                 move = chess.Move.from_uci(player_input)
                 if move in board.legal_moves:
                     return move
@@ -36,7 +22,6 @@ def _get_player_move(board: chess.Board) -> chess.Move:
 
 
 def _print_game_result(game: GameState):
-    """Prints the final result of the game."""
     print(f"\nGame over. Result: {game.board.result()}")
     outcome = game.get_outcome()
     if not outcome:
@@ -52,9 +37,6 @@ def _print_game_result(game: GameState):
 
 
 def play_game(difficulty: int = 5, color: str = "white"):
-    """
-    Starts and manages a game of chess between a human player and the AI.
-    """
     game = GameState()
     player_color = chess.WHITE if color.lower() == "white" else chess.BLACK
 

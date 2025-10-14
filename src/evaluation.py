@@ -169,7 +169,7 @@ def get_rook_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
 
 # DOUBLE BISHOP
 def get_double_bishop_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
-    my_bishop = board.pieces((chess.BISHOP, color))
+    my_bishop = board.pieces(chess.BISHOP, color)
     if len(my_bishop) == 2:
         return (DOUBLE_BISHOP_BONUS_MG, DOUBLE_BISHOP_BONUS_EG)
     return (0, 0)
@@ -238,7 +238,7 @@ def king_attack_zone_penalty(board: chess.Board, color: chess.Color) -> tuple[in
                 value_of_attacks += len(attacks_in_zone) * KING_ATTACK_ZONE_WEIGHTS[piece_type]
 
     if attacker_count == 0:
-        return 0
+        return (0,0)
 
     multiplier_index = min(attacker_count, len(ATTACK_WEIGHT_MULTIPLIER) - 1)
     attack_multiplier = ATTACK_WEIGHT_MULTIPLIER[multiplier_index]

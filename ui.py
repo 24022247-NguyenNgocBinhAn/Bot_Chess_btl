@@ -2,8 +2,10 @@
 import tkinter as tk
 import threading
 import chess
-from board import GameState
-from search import find_best_move
+import chess.svg
+import src
+from src.search import find_best_move
+from src.board import GameState
 
 PIECES = {
     ('P', True): '♙', ('N', True): '♘', ('B', True): '♗', ('R', True): '♖', ('Q', True): '♕', ('K', True): '♔',
