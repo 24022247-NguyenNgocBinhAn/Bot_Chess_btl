@@ -64,7 +64,6 @@ def get_isolated_pawns_penalty(board: chess.Board, color: chess.Color) -> tuple[
 
     return (mg_penalty, eg_penalty)
 
-
 def get_passed_pawn_bonus(board: chess.Board, color: chess.Color) -> tuple[int, int]:
     my_pawns = board.pieces(chess.PAWN, color)
     opponent_pawns = board.pieces(chess.PAWN, not color)
