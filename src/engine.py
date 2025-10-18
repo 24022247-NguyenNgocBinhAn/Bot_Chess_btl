@@ -1,7 +1,7 @@
 # engine.py
 import chess
-from board import GameState
-from search import find_best_move
+from src.board import GameState
+from src.search import find_best_move
 
 
 def _get_player_move(board: chess.Board) -> chess.Move:

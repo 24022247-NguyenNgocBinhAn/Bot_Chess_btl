@@ -1,5 +1,5 @@
 import chess
-from src.constant import *
+from .constant import *
 
 def phase_score_calculator(current_phase_score: int, mg_score: int, eg_score: int) -> float:
     phase = min(current_phase_score, TOTAL_PHASE)  # Cap phase to handle promotions

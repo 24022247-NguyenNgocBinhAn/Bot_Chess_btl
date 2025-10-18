@@ -1,6 +1,6 @@
 import chess
-from src.evaluation import evaluate_board
-from src.board import GameState
+from .evaluation import evaluate_board
+from .board import GameState
 
 position_count = 0
 

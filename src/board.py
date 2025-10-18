@@ -40,5 +40,3 @@ class GameState:
 
     def turn(self):
         return self.board.turn
-
-
