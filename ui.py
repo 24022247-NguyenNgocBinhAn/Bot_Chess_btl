@@ -113,5 +113,5 @@ class ChessUI(tk.Tk):
 
 
 if __name__ == "__main__":
-    app = ChessUI(difficulty=3, player_color="white")
+    app = ChessUI(difficulty=5, player_color="white")
     app.mainloop()
